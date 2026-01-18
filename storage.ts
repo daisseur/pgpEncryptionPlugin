@@ -27,11 +27,11 @@ export interface PGPKeys {
 const STORAGE_KEY = "pgp-encryption-keys";
 const logger = new Logger("PGPEncryption:Storage");
 
-// Cache en mémoire pour éviter les appels répétés à DataStore
+// In-memory cache to avoid repeated calls to DataStore
 let keysCache: Record<string, PGPKeys> = {};
 let cacheLoaded = false;
 
-// Charger le cache depuis DataStore
+// Load cache from DataStore
 async function loadCache(): Promise<void> {
     if (cacheLoaded) return;
     
@@ -39,43 +39,43 @@ async function loadCache(): Promise<void> {
         keysCache = await DataStore.get(STORAGE_KEY) || {};
         cacheLoaded = true;
     } catch (error) {
-        logger.error("Erreur lors du chargement du cache:", error);
+        logger.error("Error loading cache:", error);
         keysCache = {};
     }
 }
 
-// Sauvegarder le cache dans DataStore
+// Save cache to DataStore
 async function saveCache(): Promise<void> {
     try {
         await DataStore.set(STORAGE_KEY, keysCache);
     } catch (error) {
-        logger.error("Erreur lors de la sauvegarde du cache:", error);
+        logger.error("Error saving cache:", error);
         throw error;
     }
 }
 
-// Récupérer les clés d'un utilisateur (synchrone via cache)
+// Get a user's keys (synchronous via cache)
 export function getUserKeys(userId: string): PGPKeys | null {
     try {
-        // Charger le cache au premier appel
+        // Load cache on first call
         if (!cacheLoaded) {
             loadCache();
         }
         return keysCache[userId] || null;
     } catch (error) {
-        logger.error("Erreur lors de la récupération des clés:", error);
+        logger.error("Error retrieving keys:", error);
         return null;
     }
 }
 
-// Sauvegarder les clés d'un utilisateur
+// Save a user's keys
 export async function setUserKeys(userId: string, keys: PGPKeys): Promise<void> {
     try {
-        // Assurer que le cache est chargé
+        // Ensure cache is loaded
         await loadCache();
         
         if (!keys.publicKey && !keys.privateKey) {
-            // Supprimer l'entrée si les deux clés sont vides
+            // Remove entry if both keys are empty
             delete keysCache[userId];
         } else {
             keysCache[userId] = keys;
@@ -83,34 +83,34 @@ export async function setUserKeys(userId: string, keys: PGPKeys): Promise<void> 
         
         await saveCache();
     } catch (error) {
-        logger.error("Erreur lors de la sauvegarde des clés:", error);
+        logger.error("Error saving keys:", error);
         throw error;
     }
 }
 
-// Obtenir toutes les clés (pour debug/export)
+// Get all keys (for debug/export)
 export async function getAllKeys(): Promise<Record<string, PGPKeys>> {
     try {
         await loadCache();
         return { ...keysCache };
     } catch (error) {
-        logger.error("Erreur lors de la récupération de toutes les clés:", error);
+        logger.error("Error retrieving all keys:", error);
         return {};
     }
 }
 
-// Supprimer toutes les clés (pour reset complet)
+// Delete all keys (for complete reset)
 export async function clearAllKeys(): Promise<void> {
     try {
         keysCache = {};
         await saveCache();
     } catch (error) {
-        logger.error("Erreur lors de la suppression des clés:", error);
+        logger.error("Error deleting keys:", error);
         throw error;
     }
 }
 
-// Initialiser le cache au démarrage
+// Initialize cache on startup
 export async function initStorage(): Promise<void> {
     await loadCache();
 }
