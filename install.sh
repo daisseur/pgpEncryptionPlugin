@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# Script d'installation du plugin PGP Encryption pour Vencord
+# Installation script for PGP Encryption plugin for Vencord
 # Usage: ./install.sh
 
 set -e
 
-echo "🔐 Installation du plugin PGP Encryption pour Vencord"
+echo "🔐 Installing PGP Encryption plugin for Vencord"
 echo "======================================================"
 echo ""
 
-# Vérifier que nous sommes dans le bon répertoire
+# Check that we are in the correct directory
 if [ ! -f "index.tsx" ] || [ ! -f "KeyManagement.tsx" ]; then
-    echo "❌ Erreur : Ce script doit être exécuté depuis le dossier pgpEncryptionPlugin"
+    echo "❌ Error: This script must be run from the pgpEncryptionPlugin folder"
     exit 1
 fi
 
-# Détecter le répertoire Vencord
+# Detect the Vencord directory
 VENCORD_DIR=""
 POSSIBLE_DIRS=(
     "$HOME/Code/vencord/Vencord"
@@ -34,58 +34,58 @@ for dir in "${POSSIBLE_DIRS[@]}"; do
 done
 
 if [ -z "$VENCORD_DIR" ]; then
-    echo "❌ Impossible de trouver le répertoire Vencord"
-    echo "   Veuillez spécifier le chemin manuellement :"
-    read -p "   Chemin vers Vencord : " VENCORD_DIR
+    echo "❌ Unable to find Vencord directory"
+    echo "   Please specify the path manually:"
+    read -p "   Path to Vencord: " VENCORD_DIR
     
     if [ ! -d "$VENCORD_DIR" ]; then
-        echo "❌ Le chemin spécifié n'existe pas"
+        echo "❌ The specified path does not exist"
         exit 1
     fi
 fi
 
-echo "✅ Vencord trouvé : $VENCORD_DIR"
+echo "✅ Vencord found: $VENCORD_DIR"
 echo ""
 
-# Vérifier si openpgp est installé
-echo "📦 Vérification des dépendances..."
+# Check if openpgp is installed
+echo "📦 Checking dependencies..."
 cd "$VENCORD_DIR"
 
 if ! grep -q "openpgp" "package.json" 2>/dev/null; then
-    echo "📥 Installation de openpgp..."
+    echo "📥 Installing openpgp..."
     pnpm add -w openpgp
-    echo "✅ openpgp installé"
+    echo "✅ openpgp installed"
 else
-    echo "✅ openpgp déjà installé"
+    echo "✅ openpgp already installed"
 fi
 
 echo ""
 
-# Vérifier si le dossier userplugins existe
+# Check if userplugins folder exists
 USERPLUGINS_DIR="$VENCORD_DIR/src/userplugins"
 if [ ! -d "$USERPLUGINS_DIR" ]; then
-    echo "📁 Création du dossier userplugins..."
+    echo "📁 Creating userplugins folder..."
     mkdir -p "$USERPLUGINS_DIR"
-    echo "✅ Dossier créé"
+    echo "✅ Folder created"
 fi
 
-# Créer le dossier du plugin
+# Create plugin folder
 PLUGIN_DIR="$USERPLUGINS_DIR/pgpEncryptionPlugin"
 if [ -d "$PLUGIN_DIR" ]; then
-    echo "⚠️  Le plugin existe déjà. Voulez-vous le mettre à jour ? (o/N)"
+    echo "⚠️  Plugin already exists. Do you want to update it? (y/N)"
     read -r response
-    if [[ ! "$response" =~ ^[oO]$ ]]; then
-        echo "❌ Installation annulée"
+    if [[ ! "$response" =~ ^[yY]$ ]]; then
+        echo "❌ Installation cancelled"
         exit 0
     fi
-    echo "🔄 Mise à jour du plugin..."
+    echo "🔄 Updating plugin..."
 else
-    echo "📁 Création du dossier du plugin..."
+    echo "📁 Creating plugin folder..."
     mkdir -p "$PLUGIN_DIR"
 fi
 
-# Copier les fichiers
-echo "📋 Copie des fichiers..."
+# Copy files
+echo "📋 Copying files..."
 cp -v index.tsx "$PLUGIN_DIR/"
 cp -v KeyManagement.tsx "$PLUGIN_DIR/"
 cp -v storage.ts "$PLUGIN_DIR/"
@@ -96,36 +96,36 @@ cp -v CHANGELOG.md "$PLUGIN_DIR/"
 cp -v ADVANCED.md "$PLUGIN_DIR/"
 
 echo ""
-echo "✅ Fichiers copiés avec succès !"
+echo "✅ Files copied successfully!"
 echo ""
 
 # Build Vencord
-echo "🔨 Voulez-vous builder Vencord maintenant ? (O/n)"
+echo "🔨 Do you want to build Vencord now? (Y/n)"
 read -r response
 if [[ ! "$response" =~ ^[nN]$ ]]; then
-    echo "🔨 Build en cours..."
+    echo "🔨 Building..."
     cd "$VENCORD_DIR"
     pnpm build
-    echo "✅ Build terminé !"
+    echo "✅ Build complete!"
     echo ""
-    echo "🎉 Installation terminée avec succès !"
+    echo "🎉 Installation completed successfully!"
     echo ""
-    echo "📝 Prochaines étapes :"
-    echo "   1. Rechargez Discord (Ctrl+R)"
-    echo "   2. Activez le plugin dans : Paramètres → Vencord → Plugins → PGP Encryption"
-    echo "   3. Consultez QUICKSTART.md pour un guide rapide"
+    echo "📝 Next steps:"
+    echo "   1. Reload Discord (Ctrl+R)"
+    echo "   2. Enable the plugin in: Settings → Vencord → Plugins → PGP Encryption"
+    echo "   3. Check QUICKSTART.md for a quick guide"
     echo ""
 else
     echo ""
-    echo "⚠️  N'oubliez pas de builder Vencord :"
+    echo "⚠️  Don't forget to build Vencord:"
     echo "   cd $VENCORD_DIR"
     echo "   pnpm build"
     echo ""
 fi
 
-echo "📚 Documentation disponible :"
-echo "   - QUICKSTART.md : Guide de démarrage rapide"
-echo "   - README.md : Documentation complète"
-echo "   - ADVANCED.md : Configuration avancée"
+echo "📚 Available documentation:"
+echo "   - QUICKSTART.md: Quick start guide"
+echo "   - README.md: Complete documentation"
+echo "   - ADVANCED.md: Advanced configuration"
 echo ""
-echo "Enjoy ! 🔐"
+echo "Enjoy! 🔐"

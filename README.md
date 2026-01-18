@@ -1,192 +1,192 @@
-# Plugin PGP Encryption pour Vencord 
-> Présupposé compatible avec equicord.. en théorie
+# PGP Encryption Plugin  for Vencord 
+> Presumed compatible with equicord... in theory
 
 <br>
 
-Plugin de chiffrement/déchiffrement automatique des messages Discord avec PGP.
-> Merci à copilot(claude-sonnet4.5) de m'avoir aidé à comprendre comment faire un plugin vencord parce que c'est pas super évident. Il m'a aussi aidé à faire les fichiers markdown mais chut ça se voit à peine
+Automatic encryption/decryption plugin for Discord messages with PGP.
+> Thanks to copilot (claude-sonnet4.5) for helping me understand how to make a vencord plugin because it’s not super obvious. He also helped me make the markdown files but shh, you can barely tell.
 
-## 🔐 Fonctionnalités
+## 🔐 Features
 
-- **Déchiffrement automatique** : Les messages PGP reçus sont déchiffrés automatiquement avec votre clé privée
-- **Chiffrement automatique** : Vos messages sont chiffrés automatiquement avec la clé publique du destinataire
-- **Gestion des clés par utilisateur** : Configurez les clés PGP pour chaque contact individuellement
-- **Génération de clés** : Générez directement des paires de clés RSA 4096 bits
-- **Validation des clés** : Vérifiez que vos clés sont valides avant de les sauvegarder
+- **Automatic decryption**: Received PGP messages are automatically decrypted with your private key
+- **Automatic encryption**: Your messages are automatically encrypted with the recipient’s public key
+- **Per-user key management**: Configure PGP keys for each contact individually
+- **Key generation**: Directly generate RSA 4096-bit key pairs
+- **Key validation**: Verify your keys are valid before saving them
 
 ## 📦 Installation
 
-1. Assurez-vous d'avoir Vencord installé depuis le repo github:
+1. Make sure you have Vencord installed from the GitHub repo:
    ```bash
    git clone https://github.com/Vendicated/Vencord
    ```
-3. cloner le repo `pgpEncryptionPlugin` dans `[Vencord]/src/userplugins/`
+3. Clone the `pgpEncryptionPlugin` repo into `[Vencord]/src/userplugins/`
    ```bash
    mkdir -p Vencord/src/userplugins
    cd Vencord/src/userplugins
    git clone https://github.com/daisseur/pgpEncryptionPlugin
    ```
-5. La dépendance `openpgp` doit être installée :
+5. The `openpgp` dependency must be installed:
    ```bash
    # cd [Vencord]
 
-   # Si les autres dépendances n'ont pas été installées:
+   # If other dependencies have not been installed:
    # pnpm i --frozen-lock files
    
    pnpm add -w openpgp
    ```
-6. Rebuild Vencord :
+6. Rebuild Vencord:
    ```bash
    pnpm build
    ```
-7. Rechargez Discord / Vesktop (Sur vekstop il faut choisir le dossier `dist` dans `[Vencord]/dist`)
-   __Pour l'application discord :__ Avant de recharger votre **application discord** vous allez devoir injecter la nouvelle version Vencord avec le plugin dans discord:
+7. Reload Discord / Vesktop (On Vesktop you must select the `dist` folder in `[Vencord]/dist`)
+   __For the Discord app:__ Before reloading your **Discord app**, you’ll need to inject the new Vencord version with the plugin into Discord:
    ```
    pnpm inject
    ```
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-### Configuration des clés pour un utilisateur
+### Configuring keys for a user
 
-1. **Faites un clic droit** sur l'utilisateur (dans la liste des membres, un DM, etc.)
-2. Sélectionnez **"Gérer les clés PGP"** dans le menu contextuel
-3. Dans la fenêtre qui s'ouvre :
-   - **Clé Publique** : Collez la clé publique de votre contact (pour chiffrer vos messages)
-   - **Clé Privée** : Collez votre clé privée (pour déchiffrer ses messages)
+1. **Right-click** the user (in the member list, a DM, etc.)
+2. Select **"Manage PGP Keys"** in the context menu
+3. In the window that opens:
+   - **Public Key**: Paste your contact’s public key (to encrypt your messages)
+   - **Private Key**: Paste your private key (to decrypt their messages)
    
-### Génération de clés
+### Key generation
 
-Si vous n'avez pas encore de clés PGP :
+If you don’t have PGP keys yet:
 
-1. Ouvrez la fenêtre de gestion des clés (voir ci-dessus)
-2. Cliquez sur **"🔑 Générer une paire de clés"**
-3. Attendez quelques secondes (génération RSA 4096 bits)
-4. Cliquez sur **"💾 Sauvegarder"**
-5. **Important** : Partagez votre clé publique avec votre contact et récupérez sa clé publique
+1. Open the key management window (see above)
+2. Click **"🔑 Generate key pair"**
+3. Wait a few seconds (RSA 4096-bit generation)
+4. Click **"💾 Save"**
+5. **Important**: Share your public key with your contact and obtain theirs
 
-### Échange de messages chiffrés
+### Exchanging encrypted messages
 
-#### Envoi :
-- Écrivez normalement votre message
-- Si le destinataire a une clé publique configurée, le message sera automatiquement chiffré
-- Le message apparaîtra sous forme de bloc PGP
+#### Sending:
+- Write your message normally
+- If the recipient has a public key configured, the message will be automatically encrypted
+- The message will appear as a PGP block
 
-#### Réception :
-- Les messages PGP reçus sont automatiquement déchiffrés
-- Un préfixe 🔓 indique un message déchiffré
+#### Receiving:
+- Received PGP messages are automatically decrypted
+- A 🔓 prefix indicates a decrypted message
 
-## ⚙️ Paramètres
+## ⚙️ Settings
 
-Accédez aux paramètres du plugin via : **Paramètres Vencord > Plugins > PGP Encryption**
+Access plugin settings via: **Vencord Settings > Plugins > PGP Encryption**
 
-- **Déchiffrer automatiquement les messages PGP** : Active/désactive le déchiffrement automatique
-- **Chiffrer automatiquement les messages sortants** : Active/désactive le chiffrement automatique
+- **Automatically decrypt PGP messages**: Enables/disables automatic decryption
+- **Automatically encrypt outgoing messages**: Enables/disables automatic encryption
 
-## 🔒 Sécurité
+## 🔒 Security
 
 ### ⚠️ Important
 
-- **NE PARTAGEZ JAMAIS votre clé privée** avec qui que ce soit
-- Conservez une copie de sauvegarde de vos clés privées en lieu sûr
-- Les clés sont stockées localement dans Vencord (DataStore)
-- Ce plugin utilise RSA 4096 bits (standard industriel)
+- **NEVER SHARE your private key** with anyone
+- Keep a backup copy of your private keys in a safe place
+- Keys are stored locally in Vencord (DataStore)
+- This plugin uses RSA 4096 bits (industry standard)
   
 > [!IMPORTANT]
-> Je compte proposer plusieurs options dont RSA 2048/1024 bits avec EDSA, mais bon pour l'instant RSA génère une grosse clé mais est secure, c'est ce qui compte.
+> I plan to offer several options including RSA 2048/1024 bits with EDSA, but for now RSA generates a large key yet is secure — that’s what matters.
 
-### Bonnes pratiques
+### Best practices
 
-1. **Générez des clés séparées** pour chaque contact si possible
-2. **Validez toujours** les clés avant de les sauvegarder
-3. **Échangez les clés publiques** par un canal sécurisé (idéalement en personne)
-4. **Renouvelez vos clés** régulièrement (recommandé : tous les 1-2 ans)
+1. **Generate separate keys** for each contact if possible
+2. **Always validate** keys before saving them
+3. **Exchange public keys** via a secure channel (ideally in person)
+4. **Renew your keys** regularly (recommended: every 1–2 years)
 
-## 🛠️ Workflow recommandé
+## 🛠️ Recommended workflow
 
-### Premier échange avec un contact
+### First exchange with a contact
 
-1. **Vous (bob)** : Générez votre paire de clés
-2. **Vous (bob)** : Envoyez votre clé publique à votre contact (par un canal sécurisé)
-3. **Votre contact (alice)** : Vous envoie sa clé publique
-4. **Vous (bob)** : Configurez les clés dans le menu contextuel :
-   - Sa clé publique (pour chiffrer vos messages)
-   - Votre clé privée (pour déchiffrer ses messages)
-5. **Testez** : Envoyez un message de test
+1. **You (bob)**: Generate your key pair
+2. **You (bob)**: Send your public key to your contact (via a secure channel)
+3. **Your contact (alice)**: Sends you their public key
+4. **You (bob)**: Configure keys in the context menu:
+   - Their public key (to encrypt your messages)
+   - Your private key (to decrypt theirs)
+5. **Test**: Send a test message
 
-## 📋 Format des clés
+## 📋 Key format
 
-Les clés doivent être au format armored (ASCII) :
+Keys must be in armored (ASCII) format:
 
-**Clé publique (Alice's key)** :
+**Public key (Alice's key)**:
 ```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
-[contenu de la clé]
+[key content]
 
 -----END PGP PUBLIC KEY BLOCK-----
 ```
 
-**Clé privée (Bob's key)** :
+**Private key (Bob's key)**:
 ```
 -----BEGIN PGP PRIVATE KEY BLOCK-----
 
-[contenu de la clé]
+[key content]
 
 -----END PGP PRIVATE KEY BLOCK-----
 ```
 
-## Dépannage
+## Troubleshooting
 
-### Les messages ne se déchiffrent pas
-- Vérifiez que vous avez bien configuré **votre clé privée** pour cet utilisateur
-- Assurez-vous que le plugin est activé et que l'option "Déchiffrer automatiquement" est cochée
-- Vérifiez que la clé est valide (bouton "✓ Valider les clés")
+### Messages don’t decrypt
+- Verify that **your private key** is correctly configured for that user
+- Ensure the plugin is enabled and "Automatically decrypt" is checked
+- Verify the key’s validity (click "✓ Validate keys")
 
-### Les messages ne se chiffrent pas
-- Vérifiez que vous avez bien configuré **la clé publique du destinataire**
-- Assurez-vous que l'option "Chiffrer automatiquement" est cochée
-- Vérifiez que vous êtes dans un DM (le plugin ne fonctionne actuellement que pour les messages directs)
+### Messages don’t encrypt
+- Verify that **the recipient’s public key** is correctly configured
+- Ensure "Automatically encrypt" is checked
+- Verify you’re in a DM (the plugin currently only works for direct messages)
 
-### Erreur lors de la génération de clés
-- Attendez quelques secondes supplémentaires (RSA 4096 prend du temps)
-- Rechargez Discord et réessayez
-- Vérifiez la console pour plus de détails
+### Key generation error
+- Wait a few more seconds (RSA 4096 takes time)
+- Reload Discord and try again
+- Check the console for more details
 
-## 🔧 Développement
+## 🔧 Development
 
-### Structure du projet
+### Project structure
 
 ```
 pgpEncryptionPlugin/
-├── index.ts           # Plugin principal avec patches et logique
-├── KeyManagement.tsx  # Interface de gestion des clés
-├── storage.ts         # Utilitaires de stockage DataStore
-└── README.md          # Ce fichier
+├── index.ts           # Main plugin with patches and logic
+├── KeyManagement.tsx  # Key management interface
+├── storage.ts         # DataStore utilities
+└── README.md          # This file
 ```
 
-### Dépendances
+### Dependencies
 
-- `openpgp` : ^6.3.0 - Bibliothèque de chiffrement PGP
+- `openpgp`: ^6.3.0 - PGP encryption library
 
 ## 📝 TODO
-- [ ] Support des clés protégées par mot de passe
-- [ ] Export/Import de configuration
-- [ ] Indicateur visuel dans l'interface pour voir qui a une clé configurée
-- [ ] Signatures numériques des messages
-- [ ] Révocation de clés
-- [ ] Gestion de l'expiration des clés
+- [ ] Support for password-protected keys
+- [ ] Export/Import configuration
+- [ ] Visual indicator in UI showing who has a configured key
+- [ ] Message digital signatures
+- [ ] Key revocation
+- [ ] Key expiration management
 
-## 📄 Licence
+## 📄 License
 
-Ce plugin est fourni tel quel, sans garantie. Utilisez-le à vos propres risques.
+This plugin is provided as-is, without warranty. Use at your own risk.
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à ouvrir des issues ou des pull requests.
+Contributions are welcome! Feel free to open issues or pull requests.
 
 ---
 
-**Auteur** : daisseur  
-**Version** : 1.0.0  
-**Compatible avec** : Vencord (dernière version)
+**Author**: daisseur  
+**Version**: 1.0.0  
+**Compatible with**: Vencord (latest version)

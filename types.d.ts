@@ -1,5 +1,5 @@
-// Types manquants pour éviter les erreurs TypeScript
-// Ces imports proviennent de Vencord et seront disponibles à l'exécution
+// Missing types to avoid TypeScript errors
+// These imports come from Vencord and will be available at runtime
 
 declare module "@api/DataStore" {
     export const DataStore: {
