@@ -35,6 +35,7 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
     const [publicKey, setPublicKey] = useState("");
     const [privateKey, setPrivateKey] = useState("");
     const [message, setMessage] = useState("");
+    const [keyType, setKeyType] = useState("rsa4096");
 
     // Load keys on component mount
     useEffect(() => {
@@ -62,12 +63,58 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
         try {
             setMessage("🔄 Generating keys...");
             
-            const { privateKey: newPrivateKey, publicKey: newPublicKey } = await openpgp.generateKey({
-                type: "rsa",
-                rsaBits: 4096,
+            let keyOptions: any = {
                 userIDs: [{ name: username }],
                 format: "armored"
-            });
+            };
+
+            switch (keyType) {
+                case "rsa2048":
+                    keyOptions.type = "rsa";
+                    keyOptions.rsaBits = 2048;
+                    break;
+                case "rsa4096":
+                    keyOptions.type = "rsa";
+                    keyOptions.rsaBits = 4096;
+                    break;
+                case "ecc-curve25519":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "curve25519";
+                    break;
+                case "ecc-p256":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "p256";
+                    break;
+                case "ecc-p384":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "p384";
+                    break;
+                case "ecc-p521":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "p521";
+                    break;
+                case "ecc-secp256k1":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "secp256k1";
+                    break;
+                case "ecc-brainpoolP256r1":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "brainpoolP256r1";
+                    break;
+                case "ecc-brainpoolP384r1":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "brainpoolP384r1";
+                    break;
+                case "ecc-brainpoolP512r1":
+                    keyOptions.type = "ecc";
+                    keyOptions.curve = "brainpoolP512r1";
+                    break;
+                default:
+                    keyOptions.type = "rsa";
+                    keyOptions.rsaBits = 4096;
+            }
+            
+            const { privateKey: newPrivateKey, publicKey: newPublicKey } = await openpgp.generateKey(keyOptions);
             
             setPublicKey(newPublicKey);
             setPrivateKey(newPrivateKey);
@@ -112,6 +159,39 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
             </Forms.FormText>
 
             <Forms.FormDivider className={Margins.top8} />
+
+            <Forms.FormTitle tag="h3">Key Type for Generation</Forms.FormTitle>
+            <Forms.FormText style={{ marginBottom: "8px" }}>
+                Select the key type to generate:
+            </Forms.FormText>
+            <select
+                value={keyType}
+                onChange={e => setKeyType(e.target.value)}
+                style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    backgroundColor: "var(--input-background)",
+                    color: "var(--text-normal)",
+                    border: "1px solid var(--background-tertiary)",
+                    marginBottom: "16px"
+                }}
+            >
+                <optgroup label="RSA (Slower, larger keys)">
+                    <option value="rsa2048">RSA 2048 - Fast generation, less secure</option>
+                    <option value="rsa4096">RSA 4096 - Recommended, secure and standard</option>
+                </optgroup>
+                <optgroup label="ECC/ECDSA (Faster, smaller keys)">
+                    <option value="ecc-curve25519">Curve25519 - Modern, very secure, recommended</option>
+                    <option value="ecc-p256">P-256 - NIST standard curve</option>
+                    <option value="ecc-p384">P-384 - NIST high security curve</option>
+                    <option value="ecc-p521">P-521 - NIST highest security curve</option>
+                    <option value="ecc-secp256k1">secp256k1 - Bitcoin/Ethereum curve</option>
+                    <option value="ecc-brainpoolP256r1">Brainpool P256 - European standard</option>
+                    <option value="ecc-brainpoolP384r1">Brainpool P384 - European high security</option>
+                    <option value="ecc-brainpoolP512r1">Brainpool P512 - European highest security</option>
+                </optgroup>
+            </select>
 
             <Forms.FormTitle tag="h3">Public Key (to encrypt sent messages)</Forms.FormTitle>
             <Forms.FormText>

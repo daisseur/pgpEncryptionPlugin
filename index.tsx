@@ -52,8 +52,21 @@ interface PGPMessage extends Message {
 // Decrypt a PGP message
 async function decryptMessage(encryptedText: string, privateKey: string): Promise<string> {
     try {
+        // Try to decode from base64 first if it's not a PGP armored message
+        let messageText = encryptedText;
+        if (!isPGPMessage(encryptedText)) {
+            try {
+                messageText = atob(encryptedText);
+                if (Settings.plugins.PGPEncryption?.logDebug) {
+                    logger.info("🔓 Decoded base64 message");
+                }
+            } catch (e) {
+                // Not base64, use as-is
+            }
+        }
+
         const message = await openpgp.readMessage({
-            armoredMessage: encryptedText
+            armoredMessage: messageText
         });
         
         const privateKeyObj = await openpgp.readPrivateKey({ armoredKey: privateKey });
@@ -78,9 +91,18 @@ async function encryptMessage(text: string, publicKey: string): Promise<string> 
         const encrypted = await openpgp.encrypt({
             message: await openpgp.createMessage({ text }),
             encryptionKeys: publicKeyObj
-        });
+        }) as string;
         
-        return encrypted as string;
+        // Encode in base64 if the option is enabled
+        if (Settings.plugins.PGPEncryption?.encodeBase64) {
+            const encoded = btoa(encrypted);
+            if (Settings.plugins.PGPEncryption?.logDebug) {
+                logger.info("🔒 Encoded message in base64");
+            }
+            return encoded;
+        }
+        
+        return encrypted;
     } catch (error) {
         logger.error("PGP encryption error:", error);
         return text;
@@ -101,6 +123,11 @@ const settings = definePluginSettings({
     autoEncrypt: {
         type: OptionType.BOOLEAN,
         description: "Automatically encrypt outgoing messages for configured users",
+        default: false,
+    },
+    encodeBase64: {
+        type: OptionType.BOOLEAN,
+        description: "Encode encrypted messages in base64 (makes them more compact)",
         default: false,
     },
     showIndicator: {

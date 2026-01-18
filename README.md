@@ -1,10 +1,12 @@
-# PGP Encryption Plugin  for Vencord 
+# PGP Encryption Plugin for Vencord 
 > Presumed compatible with equicord... in theory
 
-<br>
-
 Automatic encryption/decryption plugin for Discord messages with PGP.
-> Thanks to copilot (claude-sonnet4.5) for helping me understand how to make a vencord plugin because it’s not super obvious. He also helped me make the markdown files but shh, you can barely tell.
+> Thanks to copilot (claude-sonnet 4.5) for helping me understand how to make a vencord plugin because it's not super obvious. He also helped me make the markdown files but shh, you can barely tell.
+
+## Other languages:
+   * French: [Version française (README-FR.md)](./README-FR.md)
+
 
 ## 🔐 Features
 
@@ -20,27 +22,36 @@ Automatic encryption/decryption plugin for Discord messages with PGP.
    ```bash
    git clone https://github.com/Vendicated/Vencord
    ```
-3. Clone the `pgpEncryptionPlugin` repo into `[Vencord]/src/userplugins/`
+
+   <details>
+   <summary>Install Equicord</summary>
+   
    ```bash
-   mkdir -p Vencord/src/userplugins
-   cd Vencord/src/userplugins
+   git clone https://github.com/Equicord/Equicord
+   ```
+   </details>
+
+2. Clone the `pgpEncryptionPlugin` repo into `src/userplugins/`
+   ```bash
+   cd Vencord  # or Equicord
+   mkdir -p src/userplugins
+   cd src/userplugins
+
    git clone https://github.com/daisseur/pgpEncryptionPlugin
    ```
-5. The `openpgp` dependency must be installed:
+3. The `openpgp` dependency must be installed:
    ```bash
-   # cd [Vencord]
-
    # If other dependencies have not been installed:
    # pnpm i --frozen-lock files
    
    pnpm add -w openpgp
    ```
-6. Rebuild Vencord:
+4. Rebuild Vencord/Equicord:
    ```bash
    pnpm build
    ```
-7. Reload Discord / Vesktop (On Vesktop you must select the `dist` folder in `[Vencord]/dist`)
-   __For the Discord app:__ Before reloading your **Discord app**, you’ll need to inject the new Vencord version with the plugin into Discord:
+5. Reload Discord / Vesktop (On Vesktop you must select the `dist` folder in `[Vencord/Equicord]/dist`)
+   __For the Discord app:__ Before reloading your **Discord app**, you'll need to inject the new Vencord version with the plugin into Discord:
    ```
    pnpm inject
    ```
@@ -60,10 +71,12 @@ Automatic encryption/decryption plugin for Discord messages with PGP.
 If you don’t have PGP keys yet:
 
 1. Open the key management window (see above)
-2. Click **"🔑 Generate key pair"**
-3. Wait a few seconds (RSA 4096-bit generation)
-4. Click **"💾 Save"**
-5. **Important**: Share your public key with your contact and obtain theirs
+2. **Select key type**: RSA (2048/4096) or ECC/ECDSA (Curve25519, P-256, P-384, P-521, secp256k1, Brainpool...)
+   - **Recommended**: Curve25519 (fast, secure) or RSA 4096 (standard)
+3. Click **"🔑 Generate key pair"**
+4. Wait a few seconds
+5. Click **"💾 Save"**
+6. **Important**: Share your public key with your contact and obtain theirs
 
 ### Exchanging encrypted messages
 
@@ -82,6 +95,7 @@ Access plugin settings via: **Vencord Settings > Plugins > PGP Encryption**
 
 - **Automatically decrypt PGP messages**: Enables/disables automatic decryption
 - **Automatically encrypt outgoing messages**: Enables/disables automatic encryption
+- **Encode encrypted messages in base64**: Makes encrypted messages more compact (automatically decoded on reception)
 
 ## 🔒 Security
 
