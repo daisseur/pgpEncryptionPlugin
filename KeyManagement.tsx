@@ -36,7 +36,7 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
     const [privateKey, setPrivateKey] = useState("");
     const [message, setMessage] = useState("");
 
-    // Charger les clés au montage du composant
+    // Load keys on component mount
     useEffect(() => {
         const storedKeys = getUserKeys(userId);
         if (storedKeys) {
@@ -47,20 +47,20 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
 
     const handleSave = async () => {
         try {
-            setMessage("💾 Sauvegarde en cours...");
+            setMessage("💾 Saving...");
             await setUserKeys(userId, { publicKey, privateKey });
-            setMessage("✅ Clés sauvegardées avec succès!");
-            logger.info("Clés sauvegardées pour l'utilisateur", userId);
+            setMessage("✅ Keys saved successfully!");
+            logger.info("Keys saved for user", userId);
         } catch (error) {
-            const errorMsg = "❌ Erreur lors de la sauvegarde: " + error;
+            const errorMsg = "❌ Error saving: " + error;
             setMessage(errorMsg);
-            logger.error("Erreur de sauvegarde:", error);
+            logger.error("Save error:", error);
         }
     };
 
     const handleGenerateKeys = async () => {
         try {
-            setMessage("🔄 Génération des clés en cours...");
+            setMessage("🔄 Generating keys...");
             
             const { privateKey: newPrivateKey, publicKey: newPublicKey } = await openpgp.generateKey({
                 type: "rsa",
@@ -71,9 +71,9 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
             
             setPublicKey(newPublicKey);
             setPrivateKey(newPrivateKey);
-            setMessage("✅ Clés générées! N'oubliez pas de sauvegarder.");
+            setMessage("✅ Keys generated! Don't forget to save.");
         } catch (error) {
-            setMessage("❌ Erreur lors de la génération: " + error);
+            setMessage("❌ Error generating: " + error);
         }
     };
 
@@ -81,14 +81,14 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
         try {
             if (publicKey) {
                 await openpgp.readKey({ armoredKey: publicKey });
-                setMessage("✅ Clé publique valide!");
+                setMessage("✅ Public key valid!");
             }
             if (privateKey) {
                 await openpgp.readPrivateKey({ armoredKey: privateKey });
-                setMessage(msg => msg + " Clé privée valide!");
+                setMessage(msg => msg + " Private key valid!");
             }
         } catch (error) {
-            setMessage("❌ Clé invalide: " + error);
+            setMessage("❌ Invalid key: " + error);
         }
     };
 
@@ -97,25 +97,25 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
             setPublicKey("");
             setPrivateKey("");
             await setUserKeys(userId, { publicKey: "", privateKey: "" });
-            setMessage("🗑️ Clés supprimées");
-            logger.info("Clés supprimées pour l'utilisateur", userId);
+            setMessage("🗑️ Keys deleted");
+            logger.info("Keys deleted for user", userId);
         } catch (error) {
-            setMessage("❌ Erreur lors de la suppression: " + error);
-            logger.error("Erreur de suppression:", error);
+            setMessage("❌ Error deleting: " + error);
+            logger.error("Delete error:", error);
         }
     };
 
     return (
         <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
             <Forms.FormText>
-                Configurez les clés PGP pour <strong>{username}</strong> (ID: {userId})
+                Configure PGP keys for <strong>{username}</strong> (ID: {userId})
             </Forms.FormText>
 
             <Forms.FormDivider className={Margins.top8} />
 
-            <Forms.FormTitle tag="h3">Clé Publique (pour chiffrer les messages envoyés)</Forms.FormTitle>
+            <Forms.FormTitle tag="h3">Public Key (to encrypt sent messages)</Forms.FormTitle>
             <Forms.FormText>
-                Collez ici la clé publique de l'utilisateur pour chiffrer les messages que vous lui envoyez.
+                Paste the user's public key here to encrypt messages you send to them.
             </Forms.FormText>
             <TextArea
                 value={publicKey}
@@ -125,9 +125,9 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
                 style={{ fontFamily: "monospace", fontSize: "11px" }}
             />
 
-            <Forms.FormTitle tag="h3" className={Margins.top16}>Clé Privée (pour déchiffrer les messages reçus)</Forms.FormTitle>
+            <Forms.FormTitle tag="h3" className={Margins.top16}>Private Key (to decrypt received messages)</Forms.FormTitle>
             <Forms.FormText>
-                Collez ici VOTRE clé privée pour déchiffrer les messages que cet utilisateur vous envoie.
+                Paste YOUR private key here to decrypt messages this user sends you.
             </Forms.FormText>
             <TextArea
                 value={privateKey}
@@ -152,39 +152,39 @@ export function KeyManagementBase({ userId, username }: KeyManagementProps) {
 
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }} className={Margins.top8}>
                 <Button onClick={handleSave} color={Button.Colors.GREEN} size={Button.Sizes.SMALL}>
-                    💾 Sauvegarder
+                    💾 Save
                 </Button>
                 <Button onClick={handleGenerateKeys} color={Button.Colors.BRAND} size={Button.Sizes.SMALL}>
-                    🔑 Générer une paire de clés
+                    🔑 Generate a key pair
                 </Button>
                 <Button onClick={handleValidate} color={Button.Colors.PRIMARY} size={Button.Sizes.SMALL}>
-                    ✓ Valider les clés
+                    ✓ Validate keys
                 </Button>
                 <Button onClick={handleClear} color={Button.Colors.RED} size={Button.Sizes.SMALL}>
-                    🗑️ Supprimer
+                    🗑️ Delete
                 </Button>
             </div>
 
             <Forms.FormDivider className={Margins.top16} />
             
             <Forms.FormText style={{ fontSize: "12px", opacity: 0.8 }}>
-                💡 <strong>Note:</strong> La clé publique sera utilisée pour chiffrer les messages que vous envoyez à cet utilisateur. 
-                La clé privée sera utilisée pour déchiffrer les messages que vous recevez de cet utilisateur.
+                💡 <strong>Note:</strong> The public key will be used to encrypt messages you send to this user. 
+                The private key will be used to decrypt messages you receive from this user.
             </Forms.FormText>
 
             <Forms.FormText style={{ fontSize: "12px", opacity: 0.8 }}>
-                ⚠️ <strong>Sécurité:</strong> Conservez votre clé privée en lieu sûr. Ne la partagez jamais avec personne!
+                ⚠️ <strong>Security:</strong> Keep your private key in a safe place. Never share it with anyone!
             </Forms.FormText>
         </div>
     );
 }
 
-// Wrapper avec ErrorBoundary comme dans messageLogger
+// Wrapper with ErrorBoundary as in messageLogger
 export const KeyManagement = ErrorBoundary.wrap(KeyManagementBase, { 
     fallback: () => (
         <div style={{ padding: "16px" }}>
             <Forms.FormText style={{ color: "var(--text-danger)" }}>
-                ❌ Une erreur s'est produite lors du chargement de l'interface de gestion des clés.
+                ❌ An error occurred while loading the key management interface.
             </Forms.FormText>
         </div>
     )
