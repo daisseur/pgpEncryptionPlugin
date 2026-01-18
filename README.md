@@ -42,7 +42,7 @@ Automatic encryption/decryption plugin for Discord messages with PGP.
 3. The `openpgp` dependency must be installed:
    ```bash
    # If other dependencies have not been installed:
-   # pnpm i --frozen-lock files
+   # pnpm i --frozen-lockfile
    
    pnpm add -w openpgp
    ```
