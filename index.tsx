@@ -49,7 +49,7 @@ interface PGPMessage extends Message {
     pgpOriginalContent?: string;
 }
 
-// Déchiffrer un message PGP
+// Decrypt a PGP message
 async function decryptMessage(encryptedText: string, privateKey: string): Promise<string> {
     try {
         const message = await openpgp.readMessage({
@@ -65,12 +65,12 @@ async function decryptMessage(encryptedText: string, privateKey: string): Promis
         
         return decrypted as string;
     } catch (error) {
-        logger.error("Erreur de déchiffrement PGP:", error);
+        logger.error("PGP decryption error:", error);
         return encryptedText;
     }
 }
 
-// Chiffrer un message PGP
+// Encrypt a PGP message
 async function encryptMessage(text: string, publicKey: string): Promise<string> {
     try {
         const publicKeyObj = await openpgp.readKey({ armoredKey: publicKey });
@@ -82,12 +82,12 @@ async function encryptMessage(text: string, publicKey: string): Promise<string> 
         
         return encrypted as string;
     } catch (error) {
-        logger.error("Erreur de chiffrement PGP:", error);
+        logger.error("PGP encryption error:", error);
         return text;
     }
 }
 
-// Détecte si le message contient un bloc PGP
+// Detects if the message contains a PGP block
 function isPGPMessage(content: string): boolean {
     return content.includes("-----BEGIN PGP MESSAGE-----") && content.includes("-----END PGP MESSAGE-----");
 }
@@ -95,27 +95,27 @@ function isPGPMessage(content: string): boolean {
 const settings = definePluginSettings({
     autoDecrypt: {
         type: OptionType.BOOLEAN,
-        description: "Déchiffrer automatiquement les messages PGP reçus",
+        description: "Automatically decrypt received PGP messages",
         default: true,
     },
     autoEncrypt: {
         type: OptionType.BOOLEAN,
-        description: "Chiffrer automatiquement les messages sortants pour les utilisateurs configurés",
+        description: "Automatically encrypt outgoing messages for configured users",
         default: false,
     },
     showIndicator: {
         type: OptionType.BOOLEAN,
-        description: "Afficher un indicateur 🔐 sur les messages chiffrés/déchiffrés",
+        description: "Show a 🔓 indicator on encrypted/decrypted messages",
         default: true,
     },
     logDebug: {
         type: OptionType.BOOLEAN,
-        description: "Activer les logs de débogage dans la console",
+        description: "Enable debug logs in the console",
         default: false,
     }
 });
 
-// Contexte menu pour accéder à la gestion des clés
+// Context menu to access key management
 const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user }) => {
     if (!user) return;
     
@@ -124,7 +124,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user }) =
     
     children.push(
         <Menu.MenuItem
-            label="Gérer les clés PGP"
+            label="Manage PGP Keys"
             id="pgp-manage-keys"
             icon={hasKeys ? () => <span>🔑</span> : undefined}
             action={() => {
@@ -133,7 +133,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user }) =
                         <ModalRoot {...props}>
                             <ModalHeader>
                                 <Forms.FormTitle tag="h2">
-                                    Clés PGP pour {user.username}
+                                    PGP Keys for {user.username}
                                 </Forms.FormTitle>
                             </ModalHeader>
                             <ModalContent>
@@ -149,7 +149,7 @@ const userContextMenuPatch: NavContextMenuPatchCallback = (children, { user }) =
 
 export default definePlugin({
     name: "PGPEncryption",
-    description: "Chiffrement et déchiffrement automatique des messages avec PGP. Configurez les clés par utilisateur via le menu contextuel.",
+    description: "Automatic encryption and decryption of messages with PGP. Configure keys per user via the context menu.",
     authors: [Devs.Ven],
     dependencies: ["MessageUpdaterAPI", "CommandsAPI", "MessageEventsAPI"],
     settings,
@@ -161,12 +161,12 @@ export default definePlugin({
     commands: [
         {
             name: "pgp",
-            description: "Envoyer un message chiffré PGP (une fois)",
+            description: "Send an encrypted PGP message (one time)",
             inputType: ApplicationCommandInputType.BUILT_IN,
             options: [
                 {
                     name: "message",
-                    description: "Le message à chiffrer et envoyer",
+                    description: "The message to encrypt and send",
                     type: ApplicationCommandOptionType.STRING,
                     required: true
                 }
@@ -176,10 +176,10 @@ export default definePlugin({
                     const message = findOption(args, "message", "");
                     const channel = ChannelStore.getChannel(ctx.channel.id);
                     
-                    // Vérifier si c'est un DM
+                    // Check if it's a DM
                     if (!channel?.recipients || channel.recipients.length !== 1) {
                         sendBotMessage(ctx.channel.id, {
-                            content: "❌ Cette commande ne fonctionne que dans les messages privés (DM)."
+                            content: "❌ This command only works in private messages (DM)."
                         });
                         return;
                     }
@@ -189,37 +189,37 @@ export default definePlugin({
                     
                     if (!keys?.publicKey) {
                         sendBotMessage(ctx.channel.id, {
-                            content: "❌ Aucune clé publique configurée pour cet utilisateur. Faites un clic droit sur l'utilisateur → Gérer les clés PGP."
+                            content: "❌ No public key configured for this user. Right-click on the user → Manage PGP Keys."
                         });
                         return;
                     }
                     
-                    // Chiffrer le message
+                    // Encrypt the message
                     const encrypted = await encryptMessage(message, keys.publicKey);
                     
-                    // Envoyer le message chiffré
+                    // Send the encrypted message
                     sendMessage(ctx.channel.id, { content: encrypted });
                     
                 } catch (error) {
-                    logger.error("Erreur lors du chiffrement:", error);
+                    logger.error("Error during encryption:", error);
                     sendBotMessage(ctx.channel.id, {
-                        content: "❌ Erreur lors du chiffrement du message: " + error
+                        content: "❌ Error encrypting message: " + error
                     });
                 }
             }
         },
         {
             name: "pgp-toggle",
-            description: "Activer/désactiver le chiffrement automatique pour cette conversation",
+            description: "Enable/disable automatic encryption for this conversation",
             inputType: ApplicationCommandInputType.BUILT_IN,
             execute: async (args, ctx) => {
                 try {
                     const channel = ChannelStore.getChannel(ctx.channel.id);
                     
-                    // Vérifier si c'est un DM
+                    // Check if it's a DM
                     if (!channel?.recipients || channel.recipients.length !== 1) {
                         sendBotMessage(ctx.channel.id, {
-                            content: "❌ Cette commande ne fonctionne que dans les messages privés (DM)."
+                            content: "❌ This command only works in private messages (DM)."
                         });
                         return;
                     }
@@ -227,24 +227,24 @@ export default definePlugin({
                     const recipientId = channel.recipients[0];
                     const currentState = Settings.plugins.PGPEncryption.autoEncrypt;
                     
-                    // Toggle l'état
+                    // Toggle the state
                     Settings.plugins.PGPEncryption.autoEncrypt = !currentState;
                     
-                    const status = Settings.plugins.PGPEncryption.autoEncrypt ? "✅ activé" : "❌ désactivé";
+                    const status = Settings.plugins.PGPEncryption.autoEncrypt ? "✅ enabled" : "❌ disabled";
                     const keys = getUserKeys(recipientId);
                     
-                    let message = `Chiffrement automatique ${status} pour cette conversation.`;
+                    let message = `Automatic encryption ${status} for this conversation.`;
                     
                     if (Settings.plugins.PGPEncryption.autoEncrypt && !keys?.publicKey) {
-                        message += "\n⚠️ Attention : Aucune clé publique configurée pour cet utilisateur. Configurez-la via le menu contextuel.";
+                        message += "\n⚠️ Warning: No public key configured for this user. Configure it via the context menu.";
                     }
                     
                     sendBotMessage(ctx.channel.id, { content: message });
                     
                 } catch (error) {
-                    logger.error("Erreur lors du toggle:", error);
+                    logger.error("Error during toggle:", error);
                     sendBotMessage(ctx.channel.id, {
-                        content: "❌ Erreur lors du basculement: " + error
+                        content: "❌ Error toggling: " + error
                     });
                 }
             }
@@ -254,7 +254,7 @@ export default definePlugin({
     start() {
         this.preSend = async (channelId: string, message: MessageObject) => {
             if (!Settings.plugins.PGPEncryption?.autoEncrypt) return;
-            if (isPGPMessage(message.content)) return; // Déjà chiffré
+            if (isPGPMessage(message.content)) return; // Already encrypted
             
             const channel = ChannelStore.getChannel(channelId);
             
@@ -266,25 +266,25 @@ export default definePlugin({
                     try {
                         message.content = await encryptMessage(message.content, keys.publicKey);
                         if (Settings.plugins.PGPEncryption.logDebug) {
-                            logger.info("🔒 Message chiffré automatiquement pour", recipientId);
+                            logger.info("🔒 Message automatically encrypted for", recipientId);
                         }
                     } catch (error) {
-                        logger.error("❌ Erreur de chiffrement automatique:", error);
+                        logger.error("❌ Automatic encryption error:", error);
                     }
                 }
             }
         };
         
         addMessagePreSendListener(this.preSend);
-        logger.info("Plugin PGPEncryption démarré - gestion des clés disponible via menu contextuel");
+        logger.info("PGPEncryption plugin started - key management available via context menu");
     },
 
     stop() {
         removeMessagePreSendListener(this.preSend);
-        logger.info("Plugin PGPEncryption arrêté");
+        logger.info("PGPEncryption plugin stopped");
     },
 
-    // Fonction appelée par les patches (actuellement désactivée)
+    // Function called by patches (currently disabled)
     async handleMessageCreate(data: any) {
         try {
             if (!Settings.plugins.PGPEncryption?.autoDecrypt) return;
@@ -297,7 +297,7 @@ export default definePlugin({
                 
                 if (keys?.privateKey) {
                     if (Settings.plugins.PGPEncryption.logDebug) {
-                        logger.info("Tentative de déchiffrement du message de", message.author.id);
+                        logger.info("Attempting to decrypt message from", message.author.id);
                     }
                     
                     const decrypted = await decryptMessage(message.content, keys.privateKey);
@@ -308,7 +308,7 @@ export default definePlugin({
                         message.pgpDecrypted = true;
                         message.pgpOriginalContent = data.message.content;
                         
-                        // Mettre à jour le message dans le store
+                        // Update the message in the store
                         FluxDispatcher.dispatch({
                             type: "MESSAGE_UPDATE",
                             message: message
@@ -317,13 +317,13 @@ export default definePlugin({
                 }
             }
         } catch (error) {
-            logger.error("Erreur dans handleMessageCreate:", error);
+            logger.error("Error in handleMessageCreate:", error);
         }
     },
 
     processMessageContent(content: string, authorId: string) {
-        // Cette fonction est synchrone et appelée lors du rendu
-        // Le déchiffrement asynchrone est géré dans handleMessageCreate
+        // This function is synchronous and called during rendering
+        // Asynchronous decryption is handled in handleMessageCreate
         return content;
     },
 
@@ -341,7 +341,7 @@ export default definePlugin({
                 
                 if (keys?.publicKey && !isPGPMessage(content)) {
                     if (Settings.plugins.PGPEncryption.logDebug) {
-                        logger.info("Chiffrement du message pour", recipientId);
+                        logger.info("Encrypting message for", recipientId);
                     }
                     
                     content = await encryptMessage(content, keys.publicKey);
@@ -350,7 +350,7 @@ export default definePlugin({
             
             return MessageActions.sendMessage(channelId, { content });
         } catch (error) {
-            logger.error("Erreur dans encryptAndSend:", error);
+            logger.error("Error in encryptAndSend:", error);
             return MessageActions.sendMessage(channelId, { content });
         }
     }
